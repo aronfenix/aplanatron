@@ -75,8 +75,8 @@ class GameCarrera extends Mini {
       if (x < f.x0 - 5 || x > f.x1 + 5) continue;
       const r = f.invert ? 1 - (this.form(f.invert).r) : f.r; if (r <= 0) continue;
       if (f.type === 'plateau') { const ss = k => k * k * (3 - 2 * k); const k1 = clamp((x - f.x0) / f.ramp, 0, 1), k2 = clamp((f.x1 - x) / f.ramp, 0, 1); h += f.H * r * ss(k1) * ss(k2); }
-      else if (f.type === 'mount') { const u = (x - f.x0) / (f.x1 - f.x0); const env = Math.pow(Math.sin(Math.PI * u), 1.3); h += f.H * r * env * (.72 + .28 * Math.abs(Math.sin(u * Math.PI * f.peaks))); }
-      else if (f.type === 'volcano') { const u = (x - f.x0) / (f.x1 - f.x0); let e = Math.pow(Math.sin(Math.PI * u), .9); if (u > .44 && u < .56) e -= .06; h += f.H * r * e; }
+      else if (f.type === 'mount') { const u = clamp((x - f.x0) / (f.x1 - f.x0), 0, 1); const env = Math.pow(Math.sin(Math.PI * u), 1.3); h += f.H * r * env * (.72 + .28 * Math.abs(Math.sin(u * Math.PI * f.peaks))); }
+      else if (f.type === 'volcano') { const u = clamp((x - f.x0) / (f.x1 - f.x0), 0, 1); let e = Math.pow(Math.sin(Math.PI * u), .9); if (u > .44 && u < .56) e -= .06; h += f.H * r * e; }
     }
     return h;
   }
@@ -93,7 +93,7 @@ class GameCarrera extends Mini {
     const g = this.nextGate(), near = g && g.x - this.x < 700 && g.x - this.x > -40;
     const slow = near ? Game.d(.45, .55, .7) : 1; this.slow = lerp(this.slow ?? 1, slow, Math.min(1, dt * 4));
     const sdt = dt * this.slow;
-    const lookH = Math.max(this.ground(this.x + 120), this.ground(this.x + 420)); this.camH = lerp(this.camH, Math.max(0, lookH - 60), Math.min(1, dt * 2.5));
+    const lookH = Math.max(this.ground(this.x + 120), this.ground(this.x + 420)); this.camH = lerp(this.camH, Math.max(0, lookH - 60), Math.min(1, dt * 2.5)); if (!Number.isFinite(this.camH)) this.camH = 0;
     if (this.tr === 1 && this.x > 4250 && !this.french) { this.french = true; Sound.play('europa', { fade: 1 }); this.showBanner('¡BIENVENUE EN FRANCE!', 'Has cruzado los Pirineos: ¡ya estás en Francia!', 1.8, '#3e5fd0'); }
     this.x += this.speed * sdt;
     for (const r of this.runners) {
