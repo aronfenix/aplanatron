@@ -1,0 +1,12 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "aplanatron",
+  "main": "src/worker.js",
+  "compatibility_date": "2026-09-24",
+  "assets": { "directory": "./public", "binding": "ASSETS", "run_worker_first": ["/api/*"] },
+  "d1_databases": [{
+    "binding": "DB",
+    "database_name": "aplanatron",
+    "database_id": "75f7071a-3cab-4642-80b3-a8d4ee0299f0"
+  }]
+}
