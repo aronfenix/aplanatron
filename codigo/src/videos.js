@@ -1,15 +1,15 @@
 'use strict';
 /* =====================================================================
    VÍDEOS DE TEORÍA: el cine de Rosa y el vídeo antes de cada prueba.
-   Los archivos están en public/videos (Cloudflare). La copia de GitHub
-   Pages los pide a la dirección de Cloudflare para no duplicarlos.
+   Los archivos están en public/videos (Cloudflare); build.py los copia
+   a docs/videos para GitHub Pages (git guarda una sola copia).
    ===================================================================== */
 const VIDEOS = [
   { id: 'palabras', file: 'aplanatron-teoria-1-palabras-del-mapa.mp4', title: 'Las palabras del mapa', topic: 'Mares, costas y relieve', color: '#2fb8a0', tests: [0, 5] },
   { id: 'tiempo', file: 'aplanatron-teoria-2-el-tiempo-loco.mp4', title: 'El tiempo loco', topic: 'Los climas de España', color: '#ffb938', tests: [3] },
   { id: 'europa', file: 'aplanatron-teoria-3-europa-en-globo.mp4', title: 'Europa en globo', topic: 'El medio físico de Europa', color: '#a66cff', tests: [4] },
 ];
-const VIDEO_BASE = location.hostname.endsWith('github.io') ? 'https://aplanatron.cuaderno-alvar-x100.workers.dev/videos/' : 'videos/';
+const VIDEO_BASE = 'videos/';
 const videoSeen = v => !!(Game.team && Game.team.seen && Game.team.seen['v_' + v.id]);
 /* vídeo que se ve antes de la prueba i (solo la primera vez) */
 function videoForTest(i) { return VIDEOS.find(v => v.tests.includes(i) && !videoSeen(v)); }

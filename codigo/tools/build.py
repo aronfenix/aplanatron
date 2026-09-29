@@ -30,4 +30,7 @@ for dirname in ('public', 'docs'):
     target.mkdir(exist_ok=True)
     for name in STATIC:
         shutil.copyfile(ROOT / name, target / name)
+# los vídeos viven en public/videos; GitHub Pages sirve docs/, así que se copian
+if (ROOT / 'public' / 'videos').is_dir():
+    shutil.copytree(ROOT / 'public' / 'videos', ROOT / 'docs' / 'videos', dirs_exist_ok=True)
 print('Juego actualizado en index.html, public/ y docs/.')

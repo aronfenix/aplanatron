@@ -73,7 +73,7 @@ Hay tres vídeos cortos con la teoría del tema:
 
 - La primera vez que se entra en esas pruebas se ve su vídeo. Se puede saltar con **¡A JUGAR!**.
 - Todos los vídeos se pueden volver a ver desde **MENÚ → VÍDEOS** en el mapa.
-- Los archivos están en `public/videos/`. La copia de GitHub Pages los carga desde la dirección de Cloudflare para no duplicarlos, así que allí hace falta internet para verlos.
+- Los archivos están en `public/videos/`. `python codigo/tools/build.py` los copia a `docs/videos/` para GitHub Pages (git guarda una sola copia de cada vídeo, así que no ocupa el doble).
 
 ## Fallos, pistas y esquema
 
