@@ -142,7 +142,7 @@ class Password {
   key(e) { return this.kb.key(e); }
   draw(c) { bg('titulo'); txt('Escribe tus tres palabras', 640, 80, { size: 48, font: 'T', color: '#ffc933', outline: 9 }); txt('separadas por espacios. Por ejemplo: VOLCAN PULPO NIEBLA', 640, 134, { size: 26, color: '#fff', outline: 5 }); this.kb.drawField(160, 180, 960, 120, { size: 48 }); if (this.msg) { drawAlvaro(1140, 330, .3, { expr: 'laugh' }); bubble(this.msg, 190, 316, 800, { size: 24, below: true, tail: false }); } for (const b of this.btns) b.draw(); }
 }
-function startTest(i) { const t = TESTS[i]; go(() => t.make(), { col: t.color }); }
+function startTest(i) { const t = TESTS[i], v = videoForTest(i); go(v ? () => new VideoScene(v, () => t.make()) : () => t.make(), { col: t.color }); }
 /* =====================================================================
    FIN DE CAPÍTULO
    ===================================================================== */

@@ -191,7 +191,7 @@ function go(make, o = {}) {
   if (G.trans) return;
   G.trans = { make, t: 0, phase: 0, kind: o.kind || 'iris', cx: o.x ?? W / 2, cy: o.y ?? H / 2, col: o.col || INK };
 }
-function enter(sc) { G.scene = sc; G.tweens = G.tweens.filter(t => !t.scene); G.timers = G.timers.filter(t => !t.scene); G.parts = []; G.pops = []; for (const k of G.ptrs.keys()) G.ptrs.delete(k); sc.btns = sc.btns || []; if (sc.enter) sc.enter(); }
+function enter(sc) { if (G.scene && G.scene !== sc && G.scene.exit) G.scene.exit(); G.scene = sc; G.tweens = G.tweens.filter(t => !t.scene); G.timers = G.timers.filter(t => !t.scene); G.parts = []; G.pops = []; for (const k of G.ptrs.keys()) G.ptrs.delete(k); sc.btns = sc.btns || []; if (sc.enter) sc.enter(); }
 function resize() {
   const ww = innerWidth, wh = innerHeight; G.scale = Math.min(ww / W, wh / H);
   G.dpr = Math.min(window.devicePixelRatio || 1, G.low ? 1 : 2);
@@ -2003,6 +2003,7 @@ const GUION = {
     { who: 'rosa', face: 'talk', text: 'Caminad por el mapa y entrad en las pruebas en el orden que queráis. Cada una que superéis devuelve algo a España.' },
     { who: 'alvaro', face: 'shock', text: '¿Devolver cosas a España? ¡Pero entonces el examen volverá a tener 47 preguntas! ¡Y tendré que CORREGIRLAS!' },
     { who: 'rosa', face: 'proud', text: 'Exacto. Cuando las superéis todas, se abrirá el puerto del sur: la prueba final.' },
+    { who: 'rosa', face: 'happy', text: 'Y si queréis repasar la teoría, en el MENÚ está mi cine: VÍDEOS con lo más importante del tema.' },
   ],
   final: [
     { who: 'alvaro', face: 'angry', text: '¡Basta! Me habéis devuelto montañas, ríos, costas, climas y hasta Europa. ¡El examen ya tiene 47 preguntas otra vez!' },
@@ -2409,7 +2410,7 @@ class Password {
   key(e) { return this.kb.key(e); }
   draw(c) { bg('titulo'); txt('Escribe tus tres palabras', 640, 80, { size: 48, font: 'T', color: '#ffc933', outline: 9 }); txt('separadas por espacios. Por ejemplo: VOLCAN PULPO NIEBLA', 640, 134, { size: 26, color: '#fff', outline: 5 }); this.kb.drawField(160, 180, 960, 120, { size: 48 }); if (this.msg) { drawAlvaro(1140, 330, .3, { expr: 'laugh' }); bubble(this.msg, 190, 316, 800, { size: 24, below: true, tail: false }); } for (const b of this.btns) b.draw(); }
 }
-function startTest(i) { const t = TESTS[i]; go(() => t.make(), { col: t.color }); }
+function startTest(i) { const t = TESTS[i], v = videoForTest(i); go(v ? () => new VideoScene(v, () => t.make()) : () => t.make(), { col: t.color }); }
 /* =====================================================================
    FIN DE CAPÍTULO
    ===================================================================== */
@@ -4394,6 +4395,7 @@ class Hub {
     const pw = Game.pw().join(' ');
     this.btns = [new Btn({ x: 470, y: 250, w: 340, h: 100, label: 'SEGUIR', size: 40, color: '#7ce05c', key: ['Escape', 'Enter'], onTap: () => { this.paused = false; this.btns = this.savedBtns; } }),
       new Btn({ x: 470, y: 370, w: 340, h: 96, label: 'ESQUEMA', size: 34, color: '#ffc933', onTap: () => this.leave(() => new Esquema()) }),
+      new Btn({ x: 90, y: 370, w: 300, h: 96, label: 'VÍDEOS', size: 34, color: '#3ec1f3', onTap: () => this.leave(() => new Cine()) }),
       new Btn({ x: 470, y: 486, w: 340, h: 96, label: 'SALIR', size: 34, color: '#ff8a3d', onTap: () => this.leave(() => new ModeSelect()) }), soundBtn(W - 110, 20)];
     if (Game.team.stars[6] > 0) this.btns.push(new Btn({ x: 850, y: 370, w: 300, h: 96, label: 'VER EL FINAL', size: 28, color: '#a66cff', onTap: () => this.leave(() => new EndCine()) }));
     this.pwText = pw;
@@ -4827,6 +4829,83 @@ class EndCine {
 
 'use strict';
 /* =====================================================================
+   VÍDEOS DE TEORÍA: el cine de Rosa y el vídeo antes de cada prueba.
+   Los archivos están en public/videos (Cloudflare); build.py los copia
+   a docs/videos para GitHub Pages (git guarda una sola copia).
+   ===================================================================== */
+const VIDEOS = [
+  { id: 'palabras', file: 'aplanatron-teoria-1-palabras-del-mapa.mp4', title: 'Las palabras del mapa', topic: 'Mares, costas y relieve', color: '#2fb8a0', tests: [0, 5] },
+  { id: 'tiempo', file: 'aplanatron-teoria-2-el-tiempo-loco.mp4', title: 'El tiempo loco', topic: 'Los climas de España', color: '#ffb938', tests: [3] },
+  { id: 'europa', file: 'aplanatron-teoria-3-europa-en-globo.mp4', title: 'Europa en globo', topic: 'El medio físico de Europa', color: '#a66cff', tests: [4] },
+];
+const VIDEO_BASE = 'videos/';
+const videoSeen = v => !!(Game.team && Game.team.seen && Game.team.seen['v_' + v.id]);
+/* vídeo que se ve antes de la prueba i (solo la primera vez) */
+function videoForTest(i) { return VIDEOS.find(v => v.tests.includes(i) && !videoSeen(v)); }
+const VBOX = { x: 100, y: 112, w: 1080, h: 608 };
+class VideoScene {
+  constructor(v, then) { this.v = v; this.then = then; }
+  enter() {
+    this.t = 0; this.err = false; this.ended = false; Sound.stop(.3);
+    if (Game.team) { Game.team.seen = Game.team.seen || {}; Game.team.seen['v_' + this.v.id] = 1; Store.save(); }
+    const el = this.el = document.createElement('video');
+    el.src = VIDEO_BASE + this.v.file; el.controls = true; el.playsInline = true; el.setAttribute('playsinline', ''); el.preload = 'auto';
+    el.setAttribute('controlsList', 'nodownload');
+    Object.assign(el.style, { position: 'fixed', zIndex: 3, background: '#000', borderRadius: '12px', objectFit: 'contain' });
+    el.addEventListener('ended', () => { this.ended = true; if (this.goBtn) this.goBtn.pulse = true; });
+    el.addEventListener('error', () => { this.err = true; el.style.display = 'none'; });
+    document.body.appendChild(el); this.place();
+    const p = el.play(); if (p && p.catch) p.catch(() => { });
+    this.btns = this.then
+      ? [this.goBtn = new Btn({ x: W - 290, y: 16, w: 270, h: 84, label: '¡A JUGAR! ▸', size: 30, color: '#7ce05c', key: ['Escape'], onTap: () => this.leave() })]
+      : [backBtn(() => this.leave(), 20, 18, 'VÍDEOS')];
+  }
+  place() {
+    if (!this.el) return; const s = G.scale, k = [G.ox + VBOX.x * s, G.oy + VBOX.y * s, VBOX.w * s, VBOX.h * s].map(Math.round).join();
+    if (k === this.pk) return; this.pk = k; const [l, t, w, h] = k.split(',');
+    Object.assign(this.el.style, { left: l + 'px', top: t + 'px', width: w + 'px', height: h + 'px' });
+  }
+  pause() { if (this.el) this.el.pause(); }
+  exit() { if (!this.el) return; this.el.pause(); this.el.removeAttribute('src'); this.el.load(); this.el.remove(); this.el = null; }
+  leave() { this.exit(); go(this.then || (() => new Cine())); }
+  update(dt) { this.t += dt; }
+  draw(c) {
+    c.fillStyle = '#23193d'; c.fillRect(0, 0, W, H);
+    txt(this.v.title, 640, 58, { size: fitSize(this.v.title, 640, 44, 'T'), font: 'T', color: this.v.color, outline: 9 });
+    rr(VBOX.x - 8, VBOX.y - 8, VBOX.w + 16, VBOX.h + 16, 20, '#000', this.v.color, 6);
+    if (this.err) { txt('No se ha podido cargar el vídeo.', 640, 380, { size: 34, font: 'T', color: '#fff', outline: 7 }); txt('Comprueba la conexión a internet y vuelve a intentarlo.', 640, 436, { size: 24, color: '#fff' }); }
+    else this.place();
+    if (this.then) txt(this.ended ? '¡Ahora a demostrar lo que sabéis!' : 'Mira el vídeo antes de la prueba o pulsa «¡A JUGAR!» para empezar ya.', 640, 764, { size: 22, color: '#fff' });
+    for (const b of this.btns) b.draw();
+  }
+}
+/* el cine de Rosa: todos los vídeos para volver a verlos */
+class Cine {
+  enter() {
+    this.btns = [backBtn(() => go(() => new Hub()), 20, 18, 'MAPA')];
+    VIDEOS.forEach((v, i) => this.btns.push(new Btn({ x: 70 + i * 390, y: 230, w: 360, h: 380, color: v.color, label: '', r: 30, onTap: () => go(() => new VideoScene(v)),
+      icon: (cx, cy) => {
+        const c = G.ctx; circle(cx, cy - 70, 62, '#fff', INK, 6);
+        c.fillStyle = v.color; c.strokeStyle = INK; c.lineWidth = 5; c.beginPath(); c.moveTo(cx - 18, cy - 102); c.lineTo(cx + 32, cy - 70); c.lineTo(cx - 18, cy - 38); c.closePath(); c.fill(); c.stroke();
+        txt('VÍDEO ' + (i + 1), cx, cy + 22, { size: 22, color: '#fff', outline: 5 });
+        wrap(v.title, 320, 32, 'T').forEach((l, j) => txt(l, cx, cy + 62 + j * 36, { size: 32, font: 'T', color: '#fff', outline: 7 }));
+        txt(v.topic, cx, cy + 142, { size: 20, color: INK });
+        if (videoSeen(v)) chip('✓ Visto', cx, cy - 160, '#fff', INK, 18);
+      } })));
+    Sound.play('mapa', { vol: .6 });
+  }
+  draw(c) {
+    c.fillStyle = '#23193d'; c.fillRect(0, 0, W, H);
+    c.fillStyle = 'rgba(255,255,255,.06)'; for (let i = 0; i < 14; i++) c.fillRect(i * 96 + 20, 690, 60, 110);
+    txt('EL CINE DE ROSA', 640, 70, { size: 60, font: 'T', color: '#ffc933', outline: 10 });
+    txt('Los vídeos de teoría del tema 1. Toca uno para verlo.', 640, 150, { size: 26, color: '#fff' });
+    drawRosa(1180, 720, .32, { expr: 'happy' });
+    for (const b of this.btns) b.draw();
+  }
+}
+
+'use strict';
+/* =====================================================================
    ARRANQUE
    ===================================================================== */
 (function boot() {
@@ -4839,7 +4918,7 @@ class EndCine {
     if (q.get('test')) { // atajo para pruebas: #test=c3&mode=2&diff=normal&stars=11000000
       const mode = +(q.get('mode') || 2);
       Game.team = { id: 'test', mode, names: mode === 1 ? ['Lucía'] : ['Lucía', 'Mateo'], avs: mode === 1 ? [1] : [1, 4], diff: q.get('diff') || 'normal', stars: (q.get('stars') || '0000000').padEnd(8, '0').split('').map(Number), best: [0, 0, 0, 0, 0, 0, 0, 0], miss: {}, seenIntro: true, seen: {}, last: 0 };
-      const n = q.get('test'); const map = { hub: () => new Hub(), g0: () => new GameBanderas(), g1: () => new GameCarrera(), g2: () => new GameRios(), g3: () => new GameAgencia(), g4: () => new GamePuzle(), g5: () => new GameGlobos(), final: () => new Play(6), esq: () => new Esquema(true), title: () => new Title(), boot: () => new Boot(), intro: () => new Intro(), end: () => new EndCine(), profe: () => new Profe(), teams: () => new Teams(mode), mode: () => new ModeSelect(), nuevo: () => new NewTeam(mode), fin: () => new ChapterEnd({ ch: +(q.get('ch') || 0), stars: 2, score: 420, errors: 3, hints: 1, time: 312, missed: ['El Ebro nace en la Cordillera Cantábrica y desemboca en el Mediterráneo.', 'Los ríos del norte son cortos, rápidos y caudalosos.'] }) };
+      const n = q.get('test'); const map = { hub: () => new Hub(), g0: () => new GameBanderas(), g1: () => new GameCarrera(), g2: () => new GameRios(), g3: () => new GameAgencia(), g4: () => new GamePuzle(), g5: () => new GameGlobos(), final: () => new Play(6), esq: () => new Esquema(true), title: () => new Title(), boot: () => new Boot(), intro: () => new Intro(), end: () => new EndCine(), cine: () => new Cine(), vid: () => new VideoScene(VIDEOS[+(q.get('v') || 0)]), profe: () => new Profe(), teams: () => new Teams(mode), mode: () => new ModeSelect(), nuevo: () => new NewTeam(mode), fin: () => new ChapterEnd({ ch: +(q.get('ch') || 0), stars: 2, score: 420, errors: 3, hints: 1, time: 312, missed: ['El Ebro nace en la Cordillera Cantábrica y desemboca en el Mediterráneo.', 'Los ríos del norte son cortos, rápidos y caudalosos.'] }) };
       if (map[n]) enter(map[n]()); else if (n.startsWith('c')) enter(new Play(+n.slice(1) - 1));
     } else enter(new Boot());
     requestAnimationFrame(frame);

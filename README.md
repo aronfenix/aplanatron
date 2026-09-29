@@ -61,6 +61,20 @@ Cada prueba es un juego distinto y empieza con una tarjeta que explica cómo se 
 
 Al ganar la prueba final se ve una animación (unos 40 s, se puede saltar): el Aplanatrón cae al Atlántico, el profe vuelve a clase empapado y con una estrella de mar, corrige los 50 exámenes y sonríe un poquito porque habéis demostrado que os lo sabéis… y esa noche, con el libro del Tema 2 delante, empieza a pensar su próxima maldad (el VOTATRÓN 5000). Se puede volver a ver desde el menú del mapa (**VER EL FINAL**).
 
+## Vídeos de teoría: el cine de Rosa
+
+Hay tres vídeos cortos con la teoría del tema:
+
+| Vídeo | Se ve antes de |
+|---|---|
+| **Las palabras del mapa** | El tirachinas de banderas (o los globos, si se empieza por ahí) |
+| **El tiempo loco** | Agencia de viajes Rosa |
+| **Europa en globo** | El puzle de Europa |
+
+- La primera vez que se entra en esas pruebas se ve su vídeo. Se puede saltar con **¡A JUGAR!**.
+- Todos los vídeos se pueden volver a ver desde **MENÚ → VÍDEOS** en el mapa.
+- Los archivos están en `public/videos/`. `python codigo/tools/build.py` los copia a `docs/videos/` para GitHub Pages (git guarda una sola copia de cada vídeo, así que no ocupa el doble).
+
 ## Fallos, pistas y esquema
 
 - Cuando se falla, Rosa explica la respuesta y el juego espera a que se pulse «¡VALE!». Si la tablet tiene voz en español, hay un botón para oírlo.

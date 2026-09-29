@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT / 'codigo' / 'src'
 ORDER = ('engine audio art art2 maps world data ui menus game_base globos '
          'g_banderas g_carrera g_rios g_agencia g_puzle play chapters hub '
-         'intro endcine main').split()
+         'intro endcine videos main').split()
 STATIC = ('index.html', 'accounts.css', 'accounts.js', 'icon-192.png',
           'icon-512.png', 'manifest.webmanifest')
 
@@ -30,4 +30,7 @@ for dirname in ('public', 'docs'):
     target.mkdir(exist_ok=True)
     for name in STATIC:
         shutil.copyfile(ROOT / name, target / name)
+# los vídeos viven en public/videos; GitHub Pages sirve docs/, así que se copian
+if (ROOT / 'public' / 'videos').is_dir():
+    shutil.copytree(ROOT / 'public' / 'videos', ROOT / 'docs' / 'videos', dirs_exist_ok=True)
 print('Juego actualizado en index.html, public/ y docs/.')

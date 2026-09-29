@@ -38,6 +38,7 @@ class Hub {
     const pw = Game.pw().join(' ');
     this.btns = [new Btn({ x: 470, y: 250, w: 340, h: 100, label: 'SEGUIR', size: 40, color: '#7ce05c', key: ['Escape', 'Enter'], onTap: () => { this.paused = false; this.btns = this.savedBtns; } }),
       new Btn({ x: 470, y: 370, w: 340, h: 96, label: 'ESQUEMA', size: 34, color: '#ffc933', onTap: () => this.leave(() => new Esquema()) }),
+      new Btn({ x: 90, y: 370, w: 300, h: 96, label: 'VÍDEOS', size: 34, color: '#3ec1f3', onTap: () => this.leave(() => new Cine()) }),
       new Btn({ x: 470, y: 486, w: 340, h: 96, label: 'SALIR', size: 34, color: '#ff8a3d', onTap: () => this.leave(() => new ModeSelect()) }), soundBtn(W - 110, 20)];
     if (Game.team.stars[6] > 0) this.btns.push(new Btn({ x: 850, y: 370, w: 300, h: 96, label: 'VER EL FINAL', size: 28, color: '#a66cff', onTap: () => this.leave(() => new EndCine()) }));
     this.pwText = pw;
