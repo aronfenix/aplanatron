@@ -159,7 +159,7 @@ function go(make, o = {}) {
   if (G.trans) return;
   G.trans = { make, t: 0, phase: 0, kind: o.kind || 'iris', cx: o.x ?? W / 2, cy: o.y ?? H / 2, col: o.col || INK };
 }
-function enter(sc) { G.scene = sc; G.tweens = G.tweens.filter(t => !t.scene); G.timers = G.timers.filter(t => !t.scene); G.parts = []; G.pops = []; for (const k of G.ptrs.keys()) G.ptrs.delete(k); sc.btns = sc.btns || []; if (sc.enter) sc.enter(); }
+function enter(sc) { if (G.scene && G.scene !== sc && G.scene.exit) G.scene.exit(); G.scene = sc; G.tweens = G.tweens.filter(t => !t.scene); G.timers = G.timers.filter(t => !t.scene); G.parts = []; G.pops = []; for (const k of G.ptrs.keys()) G.ptrs.delete(k); sc.btns = sc.btns || []; if (sc.enter) sc.enter(); }
 function resize() {
   const ww = innerWidth, wh = innerHeight; G.scale = Math.min(ww / W, wh / H);
   G.dpr = Math.min(window.devicePixelRatio || 1, G.low ? 1 : 2);

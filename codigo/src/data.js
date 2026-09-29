@@ -164,6 +164,7 @@ const GUION = {
     { who: 'rosa', face: 'talk', text: 'Caminad por el mapa y entrad en las pruebas en el orden que queráis. Cada una que superéis devuelve algo a España.' },
     { who: 'alvaro', face: 'shock', text: '¿Devolver cosas a España? ¡Pero entonces el examen volverá a tener 47 preguntas! ¡Y tendré que CORREGIRLAS!' },
     { who: 'rosa', face: 'proud', text: 'Exacto. Cuando las superéis todas, se abrirá el puerto del sur: la prueba final.' },
+    { who: 'rosa', face: 'happy', text: 'Y si queréis repasar la teoría, en el MENÚ está mi cine: VÍDEOS con lo más importante del tema.' },
   ],
   final: [
     { who: 'alvaro', face: 'angry', text: '¡Basta! Me habéis devuelto montañas, ríos, costas, climas y hasta Europa. ¡El examen ya tiene 47 preguntas otra vez!' },
