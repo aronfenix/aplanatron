@@ -24,7 +24,9 @@ En cada tablet, abre la dirección en Chrome y usa **⋮ → Añadir a pantalla 
 - Si se corta la conexión, el juego conserva los cambios pendientes en ese dispositivo y vuelve a enviarlos al recuperar la conexión. Los récords y las estrellas no bajan al sincronizar dos dispositivos.
 - Las puntuaciones son resultados del juego calculados en el navegador, no calificaciones verificadas por el servidor.
 
-Para desplegar una actualización: `python codigo/tools/build.py`, `npm install`, `npx wrangler d1 migrations apply aplanatron --remote` y `npx wrangler deploy`. La contraseña inicial del profesor se configura como secreto `TEACHER_PASSWORD` en Cloudflare. Nunca se incluye en el repositorio.
+**Publicación automática:** Cloudflare está conectado a este repositorio y ejecuta `npx wrangler deploy` cada vez que cambia la rama `main`. GitHub Pages también se actualiza solo. Antes de fusionar un cambio en el código hay que ejecutar `python codigo/tools/build.py` para regenerar `index.html`, `public/` y `docs/`.
+
+Si un cambio añade una migración de la base de datos, hay que aplicarla a mano: `npm install` y `npx wrangler d1 migrations apply aplanatron --remote`. Para publicar a mano sin esperar a GitHub: `npx wrangler deploy`. La contraseña inicial del profesor se configura como secreto `TEACHER_PASSWORD` en Cloudflare. Nunca se incluye en el repositorio.
 
 ## Cómo se juega
 
